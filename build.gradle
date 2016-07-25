@@ -1,14 +1,28 @@
-group 'com.hkhamm'
-version '1.0'
-
+// Apply the java plugin to add support for Java
 apply plugin: 'java'
 
-sourceCompatibility = 1.5
+sourceCompatibility = 1.8
 
 repositories {
-    mavenCentral()
+    jcenter()
+}
+
+test {
+    useTestNG()
+    enableAssertions = true
+    testLogging {
+        showExceptions = true
+        showStandardStreams = true
+        exceptionFormat = 'full'
+    }
+    // Always re-run tests even if they are up to date
+    outputs.upToDateWhen { false }
 }
 
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile 'ch.qos.logback:logback-classic:1.1.3'
+    compile group: 'org.asynchttpclient', name: 'async-http-client', version: '2.0.11'
+
+    testCompile 'org.testng:testng:6.1.1'
+    testCompile 'org.assertj:assertj-core:3.3.0'
 }
