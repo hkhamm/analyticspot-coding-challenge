@@ -6,11 +6,13 @@ import org.asynchttpclient.Request;
 public class PostRequest {
 
     private int attempts;
+    private int waitTime;
     private Request request;
 
     public PostRequest(Request request) {
         this.request = request;
         this.attempts = 0;
+        this.waitTime = 1000;
     }
 
     public int getAttempts() {
@@ -19,13 +21,14 @@ public class PostRequest {
 
     public void setAttempts(int attempts) {
         this.attempts = attempts;
+        this.waitTime *= 2;
+    }
+
+    public int getWaitTime() {
+        return waitTime;
     }
 
     public Request getRequest() {
         return request;
-    }
-
-    public void setRequest(Request request) {
-        this.request = request;
     }
 }
