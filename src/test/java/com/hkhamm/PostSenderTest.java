@@ -106,4 +106,17 @@ public class PostSenderTest {
 
         mockServer.stop();
     }
+
+    // Sends a POST request to an invalid URL.
+    @Test
+    public void testSendBadUrl() throws Exception {
+        try {
+            PostSender postSender = new PostSender("http://badurl");
+            CompletableFuture<Response> futureResponse = postSender.send("badurl");
+            futureResponse.get();
+        } catch (Exception e) {
+            log.error(e.getMessage());
+            assertThat(e.getMessage()).containsSequence("URL is invalid");
+        }
+    }
 }

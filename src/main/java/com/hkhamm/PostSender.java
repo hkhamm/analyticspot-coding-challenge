@@ -1,15 +1,13 @@
 package com.hkhamm;
 
-import org.asynchttpclient.AsyncHttpClient;
-import org.asynchttpclient.DefaultAsyncHttpClient;
-import org.asynchttpclient.Request;
-import org.asynchttpclient.RequestBuilder;
-import org.asynchttpclient.Response;
+import org.apache.commons.validator.routines.UrlValidator;
+import org.asynchttpclient.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
@@ -28,12 +26,18 @@ public class PostSender {
     private int threadCount;
     private boolean finished;
 
-    public PostSender(String url) {
-        this.url = url;
-        requestQueue = new LinkedBlockingQueue(10);
-        asyncHttpClient = new DefaultAsyncHttpClient();
-        threadCount = 0;
-        finished = false;
+    public PostSender(String url) throws Exception {
+        String[] schemes = {"http","https"};
+        UrlValidator urlValidator = new UrlValidator(schemes);
+        if (!urlValidator.isValid(url) && !url.contains("localhost")) {
+            throw new Exception("URL is invalid");
+        } else {
+            this.url = url;
+            requestQueue = new LinkedBlockingQueue(10);
+            asyncHttpClient = new DefaultAsyncHttpClient();
+            threadCount = 0;
+            finished = false;
+        }
     }
 
     /**
@@ -132,4 +136,47 @@ public class PostSender {
         });
         thread.start();
     }
+
+//    /**
+//     * Sends requests and re-sends failed requests to the server at the {@code url}. The {@param postRequest} holds
+//     * the request to be sent. {@return promise} is the CompletableFuture response returned to the caller.
+//     *
+//     * Handles the POST {@param response}. If the server responds with success (any 20x response code) it is done. If
+//     * not, failed send attempts are retried with an exponential backoff. The first retry is attempted after 1 second,
+//     * then 2 seconds, then 4 seconds, up to 1024 seconds. If it fails 10 times the item is dropped. The
+//     * {@param postRequest} keeps the current {@code attempts} and {@code waitTime}.
+//     */
+//    private CompletableFuture<Response> sendRequest(PostRequest postRequest) {
+//        Request request = postRequest.getRequest();
+//        log.info("Sending POST request with body \"{}\" to {}.", request.getStringData(), this.url);
+//        return asyncHttpClient.prepareRequest(request).execute(new AsyncCompletionHandler<Response>(){
+//
+//            @Override
+//            public Response onCompleted(Response response) throws Exception{
+//                while (response.getStatusCode() / 100 != 2 || postRequest.getAttempts() < MAX_ATTEMPTS) {
+//                    log.error("POST failed. Attempting to resend the request.");
+//                    log.info("Attempts: {}", postRequest.getAttempts());
+//                    postRequest.setAttempts(postRequest.getAttempts() + 1);
+//                    CompletableFuture<Response> promise = sendRequest(postRequest);
+//                    try {
+//                        finalResponse = promise.get();
+//                    } catch (InterruptedException | ExecutionException e) {
+//                        log.error(e.getMessage());
+//                    }
+//                }
+//
+//                if (response.getStatusCode() / 100 == 2) {
+//                    log.info("POST succeeded.");
+//                    finalResponse = response;
+//                }
+//
+//                return finalResponse;
+//            }
+//
+//            @Override
+//            public void onThrowable(Throwable e){
+//                log.error(e.getMessage());
+//            }
+//        }).toCompletableFuture();
+//    }
 }

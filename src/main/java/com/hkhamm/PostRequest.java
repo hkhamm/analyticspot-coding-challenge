@@ -3,6 +3,9 @@ package com.hkhamm;
 
 import org.asynchttpclient.Request;
 
+/**
+ * Keeps information necessary for resending POST requests after failure.
+ */
 public class PostRequest {
 
     private int attempts;
